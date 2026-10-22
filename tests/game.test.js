@@ -27,6 +27,7 @@ class FakeClassList {
 class FakeElement {
     constructor(index = null) {
         this.index = index;
+        this.attributes = index === null ? {} : { 'data-index': String(index) };
         this.innerText = '';
         this.classList = new FakeClassList();
         this.listeners = {};
@@ -37,7 +38,11 @@ class FakeElement {
     }
 
     getAttribute(name) {
-        return name === 'data-index' ? String(this.index) : null;
+        return this.attributes[name] ?? null;
+    }
+
+    setAttribute(name, value) {
+        this.attributes[name] = String(value);
     }
 
     click() {
@@ -81,6 +86,7 @@ test('an occupied cell cannot be played twice', () => {
     game.cells[1].click();
 
     assert.equal(game.cells[0].innerText, 'X');
+    assert.equal(game.cells[0].getAttribute('aria-label'), 'Cell 1, X');
     assert.equal(game.cells[1].innerText, 'O');
 });
 
@@ -113,6 +119,17 @@ test('reset clears the board and starts a new game with X', () => {
 
     assert.equal(game.message.innerText, '');
     assert.equal(game.cells[0].innerText, 'X');
+    assert.equal(game.cells[0].getAttribute('aria-label'), 'Cell 1, X');
     assert.equal(game.congratulations.classList.contains('show'), false);
     assert.equal(game.cells.slice(1).every(cell => cell.innerText === ''), true);
+});
+
+test('board controls and game status expose accessible semantics', () => {
+    const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    const css = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
+
+    assert.match(html, /role="group" aria-label="Tic-tac-toe board"/);
+    assert.match(html, /<button type="button" class="cell" data-index="0" aria-label="Cell 1, empty">/);
+    assert.match(html, /id="message" role="status" aria-live="polite"/);
+    assert.match(css, /\.cell:focus-visible/);
 });

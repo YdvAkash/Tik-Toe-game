@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const handleCellClick = (e) => {
         const cell = e.target;
-        const cellIndex = parseInt(cell.getAttribute('data-index'));
+        const cellIndex = Number.parseInt(cell.getAttribute('data-index'), 10);
 
         if (board[cellIndex] !== '' || !gameActive) {
             return;
@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
         board[cellIndex] = currentPlayer;
         cell.innerText = currentPlayer;
         cell.classList.add(currentPlayer);
+        cell.setAttribute('aria-label', `Cell ${cellIndex + 1}, ${currentPlayer}`);
 
         checkWinner();
         if (gameActive) {
@@ -65,9 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
         board = ['', '', '', '', '', '', '', '', ''];
         gameActive = true;
         message.innerText = '';
-        cells.forEach(cell => {
+        cells.forEach((cell, index) => {
             cell.innerText = '';
             cell.classList.remove('X', 'O');
+            cell.setAttribute('aria-label', `Cell ${index + 1}, empty`);
         });
         congratulations.classList.remove('show');
     };
